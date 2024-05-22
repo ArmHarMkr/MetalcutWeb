@@ -1,0 +1,11 @@
+﻿@model IEnumerable<ChatEntity>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@foreach(ChatEntity chat in Model)
+{
+    <p>@chat.UserOne.FullName</p>
+    <a asp-action="AnswerToQuestion" asp-controller="ChatAnswer" asp-area="EmployeeManagement" asp-route-id="">Answer to question</a>
+}

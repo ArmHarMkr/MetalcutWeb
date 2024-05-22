@@ -1,0 +1,68 @@
+﻿@using MetalcutWeb.Domain.Entity
+@model IEnumerable<OrderEntity>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<a asp-action="CreateOrder" asp-controller="Order" asp-area="Customers">Create new Order</a>
+
+@if (Model.Count() == 0)
+{
+    <p>No Order yet.</p>
+}
+else
+{
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Order Desciption</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Price</th>
+            <th scope="col">Created Date</th>
+            <th scope="col">Finished Date</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <th scope="row">@order.Id</th>
+                <td>@order.CustomerName</td>
+                <td>@order.OrderDescription</td>
+                <td>@order.CustomerPhone</td>
+                <td>@order.OrderPrice</td>
+                <td>@order.OrderCreatedDate.ToShortDateString()</td>
+                <td>@order.OrderFinishDate.ToShortDateString()</td>
+                <td>
+                    <form asp-action="DeleteOrder" asp-route-id="@order.Id">
+                        <button type="submit">Delete Order</button>
+                    </form>
+                </td>
+                <td>
+                        <a asp-area="Customers" asp-action="EditOrder" asp-route-id="@order.Id" asp-controller="Order">Edit Order</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
+
+<p>Sum: @Model.Sum(o => o.OrderPrice)</p>

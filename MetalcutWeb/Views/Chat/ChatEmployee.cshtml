@@ -1,0 +1,52 @@
+﻿@using MetalcutWeb.ViewModels
+@inject UserManager<AppUser> _userManager
+@model ChatMessageViewModel
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if(TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<p>@Model.ChatEntity.Id</p>
+<p>@Model.ChatEntity.ChatName</p>
+<p>@Model.ChatEntity.UserOne</p>
+<p>@Model.ChatEntity.UserTwo</p>
+
+<br />
+
+@if(Model.Messages.Count() == 0)
+{
+    <p>No messages yet.</p>
+}
+else
+{
+    @foreach(MessageEntity msg in Model.Messages)
+    {
+        @if(msg.Sender == await _userManager.GetUserAsync(User))
+        {
+            <p><bold>You:</bold>@msg.MessageText | @msg.SentTime.ToShortDateString()</p>
+        }
+        else
+        {
+            <p><bold>@msg.Sender.FullName: </bold>@msg.MessageText | @msg.SentTime.ToShortDateString()</p>
+        }
+    }
+}
+
+<form asp-action="SendMessage" asp-controller="Chat" asp-route-Chatid="@Model.ChatEntity.Id" asp-route-ReceiverId="@Model.ChatEntity.UserTwo">
+    <input asp-for="@Model.messageEntity.MessageText" placeholder="Type message" />
+    <span asp-validation-for="@Model.messageEntity.MessageText" class="text-danger"></span>
+    <button type="submit">Send message</button>
+</form>

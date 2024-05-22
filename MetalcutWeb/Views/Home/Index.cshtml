@@ -1,0 +1,281 @@
+﻿@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@using MetalcutWeb.Domain.Roles
+@using MetalcutWeb.ViewModels
+@model ProductCommentViewModel
+@inject UserManager<AppUser> userManager
+@inject SignInManager<AppUser> signInManager
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Add your custom styles here */
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px; /* Adjust as needed */
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .comments-section {
+            margin-top: 20px;
+        }
+
+        .comment {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px; /* Added margin to separate comments */
+        }
+
+            .comment p {
+                margin: 5px 0;
+            }
+
+                .comment p:first-child {
+                    font-weight: bold;
+                }
+
+            .comment .comment-text {
+                margin-top: 10px;
+            }
+
+            .comment .comment-actions {
+                margin-top: 10px;
+            }
+
+            .comment .delete-comment-btn {
+                margin-left: 10px;
+            }
+
+        /* Added styles for the comment form */
+        .comment-form {
+            margin-top: 20px;
+        }
+
+            .comment-form input[type="number"],
+            .comment-form textarea {
+                width: 100%;
+                padding: 8px;
+                margin-bottom: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+            .comment-form button {
+                padding: 6px 12px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+                .comment-form button:hover {
+                    background-color: #0056b3;
+                }
+
+    </style>
+    <title>Product Card</title>
+</head>
+<body>
+    <a asp-controller="Delivery" asp-action="AllDeliveries">All Deliveries</a>
+    <form method="get" action="@Url.Action("Index", "Home")">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search products" name="searchTerm">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
+
+    <div class="container">
+        <div class="row">
+            @if (Model.Products.Count() == 0)
+            {
+                <h1>No products found</h1>
+            }
+            else
+            {
+                @foreach (var product in Model.Products)
+                {
+                    <div class="col-md-4">
+                        <div class="product-card">
+                            <h4 class="mt-3">@product.ProdName</h4>
+                            @if (!string.IsNullOrEmpty(product.ImagePath))
+                            {
+                                <img src="~/images/@product.ImagePath" alt="Product Image" class="img-thumbnail" />
+                            }
+                            <div class="rating">
+                                @for (int i = 0; i < product.StarCount; i++)
+                                {
+                                    if (product.StarCount != 0)
+                                    {
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                                            <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        <p>No stars</p>
+                                    }
+                                }
+                            </div>
+                            <p>@product.ProdDescription</p>
+                            <p><strong>Price for:</strong> @product.Price</p>
+
+                            @if (product.Id == "PlasmaId")
+                            {
+                                <form asp-controller="PlasmaCalculator" asp-action="Index">
+                                    <button type="submit">Show Calculator prices and request forms</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="Delivery" asp-action="AllDeliveries">
+                                    <button type="submit">Request a delivery</button>
+                                </form>
+                            }
+                            <div class="comments-section">
+                                <h3>Comments</h3>
+                                @if (Model.Comments.Any())
+                                {
+                                    foreach (var comment in Model.Comments)
+                                    {
+                                        @if (comment.Product == product)
+                                        {
+                                            if (comment.CommentatorUser == await userManager.GetUserAsync(User))
+                                            {
+                                                <div class="comment">
+                                                    <p><strong>Liked:</strong>@comment.LikeCount</p>
+                                                    <p><strong>@comment.CommentatorUser.FullName</strong> - @comment.CommentedTime.ToShortDateString()</p>
+                                                    <div class="comment-text">
+                                                        <p>@comment.CommentText</p>
+                                                    </div>
+                                                    <div class="comment-actions">
+                                                        <form asp-action="DeleteComment" asp-route-id="@comment.CommentId">
+                                                            <button type="submit" class="btn btn-sm btn-danger delete-comment-btn">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="comment">
+                                                    <p><strong>Liked:</strong>@comment.LikeCount</p>
+                                                    <p><strong>@comment.CommentatorUser.FullName</strong> - @comment.CommentedTime.ToShortDateString()</p>
+                                                    <div class="rating">
+                                                        @for (int i = 0; i < product.StarCount; i++)
+                                                        {
+                                                            if (product.StarCount != 0)
+                                                            {
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                                                                    <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+                                                                </svg>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p>No stars</p>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <div class="comment-text">
+                                                        <p>@comment.CommentText</p>
+                                                    @if (signInManager.IsSignedIn(User))
+                                                    {
+                                                            <form id="likeForm" asp-controller="Home" asp-action="LikeComment" asp-route-id="@comment.CommentId">
+                                                                <button class="btn btn-success" onclick="hideForm()">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-square-fill" viewBox="0 0 16 16">
+                                                                        <path d="M2 16a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2zm6.5-4.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 1 0"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                    }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <p>No comments yet.</p>
+                                }
+                            </div>
+                            @if (signInManager.IsSignedIn(User))
+                            {
+                                var currentUser = await userManager.GetUserAsync(User);
+                                var isAdmin = await userManager.IsInRoleAsync(currentUser, SD.Role_Admin);
+                                var isManager = await userManager.IsInRoleAsync(currentUser, SD.Role_Manager);
+                                var isEmployee = await userManager.IsInRoleAsync(currentUser, SD.Role_Employee);
+                                var isCustomer = await userManager.IsInRoleAsync(currentUser, SD.Role_Customer);
+
+                                if (isCustomer)
+                                {
+                                    <form asp-controller="Home" asp-action="AddComment" asp-route-id="@product.Id" class="add-comment-form" id="commentForm">
+                                        <div class="form-group">
+                                            <label for="stars">Stars:</label>
+                                            <input asp-for="@Model.CommentEntity.Stars" type="number" min="1" max="5" class="form-control" id="stars" />
+                                            <span asp-validation-for="@Model.CommentEntity.Stars" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="commentText">Comment:</label>
+                                            <textarea asp-for="@Model.CommentEntity.CommentText" class="form-control" id="commentText"></textarea>
+                                            <span asp-validation-for="@Model.CommentEntity.CommentText" class="text-danger"></span>
+                                        </div>
+                                        <button type="submit" id="commentBtn" class="btn btn-primary">Comment</button>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#commentForm").validate();
+        });
+    </script>
+    <script>
+        function hideForm() {
+            document.getElementById("likeForm").style.display = "none";
+        }
+    </script>
+
+</body>
+</html>

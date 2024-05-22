@@ -1,0 +1,10 @@
+﻿@model IEnumerable<AppUser>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@foreach(var employee in Model)
+{
+    <p><a asp-action="ChatEmployee" asp-controller="Chat" asp-route-id="@employee.Id">Chat with employee: </a> @employee.FullName:</p>
+}

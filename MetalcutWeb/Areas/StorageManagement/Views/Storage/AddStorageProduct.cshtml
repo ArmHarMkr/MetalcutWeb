@@ -1,0 +1,86 @@
+﻿@model StorageProductEntity
+
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Add your custom styles here */
+    .form-container {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .form-input {
+        margin-bottom: 10px;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .form-select {
+        margin-bottom: 10px;
+    }
+
+    .form-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+        .form-button:hover {
+            background-color: #0056b3;
+        }
+</style>
+
+
+<form asp-action="AddStorageProduct" asp-controller="Storage" asp-area="StorageManagement" class="form-container">
+    <div class="form-input">
+        <label asp-for="@Model.StorageProductName" class="form-label"></label>
+        <input asp-for="@Model.StorageProductName" class="form-control" />
+        <span asp-validation-for="@Model.StorageProductName"></span>
+    </div>
+
+    <div class="form-input">
+        <label asp-for="@Model.StorageProductDescription" class="form-label"></label>
+        <input asp-for="@Model.StorageProductDescription" class="form-control" />
+        <span asp-validation-for="@Model.StorageProductDescription"></span>
+    </div>
+
+    <div class="form-input">
+        <label asp-for="@Model.StorageProdCount" class="form-label"></label>
+        <input asp-for="@Model.StorageProdCount" class="form-control" />
+        <span asp-validation-for="@Model.StorageProdCount"></span>
+    </div>
+
+    <div class="form-input">
+        <select name="StorageProductTypes" id="StorageProductTypes" class="form-select">
+            @foreach (var productTypes in ViewBag.StorageProductTypes)
+            {
+                <option value="@productTypes">@productTypes</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="form-button">Add Product</button>
+</form>

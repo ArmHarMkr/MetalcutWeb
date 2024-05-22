@@ -1,0 +1,76 @@
+﻿@using MetalcutWeb.Areas.StorageManagement.ViewModels
+@using MetalcutWeb.Domain.Entity
+@model StorageViewModel
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<a asp-action="AddStorageProduct" asp-controller="Storage" asp-area="StorageManagement" class="btn btn-primary">Add Product to storage</a>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Count</th>
+            <th>Add to quantity</th>
+            <th>Reduce from quantity</th>
+            <th>Delete Product From Storage</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (StorageProductEntity prod in Model.StorageProducts)
+        {
+            <tr>
+                <td>@prod.StorageProductId</td>
+                <td>@prod.StorageProductName</td>
+                <td>@prod.StorageProductTypes.ToString()</td>
+                <td>@prod.StorageProdCount</td>
+                <td>
+                    <form asp-action="AddToQuantity" asp-controller="Storage" asp-area="StorageManagement" asp-route-id="@prod.StorageProductId">
+                        <input asp-for="AddingAmount" type="number" min="1"/>
+                        <button type="submit">Add To Quantity</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-action="ReduceFromQuantity" asp-controller="Storage" asp-area="StorageManagement" asp-route-id="@prod.StorageProductId">
+                        <input asp-for="ReducingAmount" type="number" min="1"/>
+                        <button type="submit">Reduce From Quantity</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-action="DeleteProductFromStorage" asp-controller="Storage" asp-area="StorageManagement" asp-route-id="@prod.StorageProductId">
+                        <button type="submit" onclick="deleteProduct()">Delete This Product From Db</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    function deleteProduct(){
+        alert("Do you want to delete the product?");
+    }
+
+</script>
