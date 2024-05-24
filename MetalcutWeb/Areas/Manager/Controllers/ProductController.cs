@@ -108,7 +108,7 @@ namespace MetalcutWeb.Areas.Manager.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct(string? id)
         {
             if (id != null)
@@ -122,7 +122,7 @@ namespace MetalcutWeb.Areas.Manager.Controllers
                 {
                     var productFromDb = _unitOfWork.Product.Get(p => p.Id == id);
                     _unitOfWork.Product.Remove(productFromDb);
-                    _deleteProductReferences.DeleteReferences(productFromDb);
+                    await _deleteProductReferences.DeleteReferences(productFromDb);
                     await _unitOfWork.Save();
                     TempData["SuccessMessage"] = "Product deleted successfully";
                     return RedirectToAction("AllProducts");
