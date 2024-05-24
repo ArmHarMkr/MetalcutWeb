@@ -69,6 +69,7 @@ namespace MetalcutWeb.Areas.Manager.Controllers
             {
                 ProdName = productVM.ProductEntity.ProdName,
                 ProdDescription = productVM.ProductEntity.ProdDescription,
+                Price = productVM.ProductEntity.Price,
                 ImagePath = uniqueFileName
             };
 
