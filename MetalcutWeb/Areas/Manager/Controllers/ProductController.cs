@@ -53,37 +53,32 @@ namespace MetalcutWeb.Areas.Manager.Controllers
 
         public async Task<IActionResult> CreateProduct(ProductViewModel productVM)
         {
-
-                string uniqueFileName = null;
-                if (productVM.Image != null)
+            string uniqueFileName = null;
+            if (productVM.Image != null)
+            {
+                string uploadsFolder = Path.Combine(_host.WebRootPath, "images");
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + productVM.Image.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadsFolder = Path.Combine(_host.WebRootPath, "images");
-                    uniqueFileName = Guid.NewGuid().ToString() + "_" + productVM.Image.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await productVM.Image.CopyToAsync(fileStream);
-                    }
+                    await productVM.Image.CopyToAsync(fileStream);
                 }
+            }
 
+            var newProduct = new ProductEntity
+            {
+                ProdName = productVM.ProductEntity.ProdName,
+                ProdDescription = productVM.ProductEntity.ProdDescription,
+                ImagePath = uniqueFileName
+            };
 
-                // Create a new product entity
-                var newProduct = new ProductEntity
-                {
-                    ProdName = productVM.ProductEntity.ProdName,
-                    ProdDescription = productVM.ProductEntity.ProdDescription,
-                    ImagePath = uniqueFileName
-                };
+            await _unitOfWork.Product.Add(newProduct);
+            await _unitOfWork.Save();
 
-                // Add the new product to the database
-                await _unitOfWork.Product.Add(newProduct);
-                await _unitOfWork.Save();
+            AppUser? currentUser = await _userManager.GetUserAsync(User);
+            _emailSender.SendEmail(currentUser.Email, "Adding new Product", "<html><body><h1>New Product added successfully<h1></body></html>", true);
 
-                // Send an email notification
-                AppUser? currentUser = await _userManager.GetUserAsync(User);
-                _emailSender.SendEmail(currentUser.Email, "Adding new Product", "<html><body><h1>New Product added successfully<h1></body></html>", true);
-
-                return RedirectToAction("AllProducts");
+            return RedirectToAction("AllProducts");
             
         }
 
