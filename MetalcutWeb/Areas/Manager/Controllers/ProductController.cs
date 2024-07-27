@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 namespace MetalcutWeb.Areas.Manager.Controllers
 {
     [Authorize(Roles = "Admin, Manager")]
-    [Route("ManageProduct/[controller]/[action]")]
+    [Route("ManageProduct/{controller}/{action}")]
     [Area("Manager")]
     public class ProductController : Controller
     {
@@ -77,8 +77,19 @@ namespace MetalcutWeb.Areas.Manager.Controllers
             await _unitOfWork.Save();
 
             AppUser? currentUser = await _userManager.GetUserAsync(User);
-            _emailSender.SendEmail(currentUser.Email, "Adding new Product", "<html><body><h1>New Product added successfully<h1></body></html>", true);
+            try
+            {
+                if (currentUser == null || string.IsNullOrEmpty(currentUser.Email))
+                {
+                    throw new ArgumentNullException(nameof(currentUser.Email), "User or user's email cannot be null.");
+                }
 
+                _emailSender.SendEmail(currentUser.Email, "Adding new Product", "<html><body><h1>New Product added successfully<h1></body></html>", true);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("AllProducts");
+            }
             return RedirectToAction("AllProducts");
             
         }

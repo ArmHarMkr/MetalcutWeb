@@ -45,7 +45,7 @@ namespace MetalcutWeb.Areas.StorageManagement.Controllers
             {
                 await _unitOfWork.StorageProduct.Add(storageProductEntity);
                 await _unitOfWork.Save();
-                TempData["SuccessMessage"] = "Product created successfully";
+                TempData["SuccessMessage"] = "Product has been created successfully";
                 return RedirectToAction("Index");
             }
             return View();  

@@ -28,6 +28,7 @@ builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IDeleteReferences<ProductEntity>, ProductRefDeleter>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 
 builder.Logging.AddConsole();
 var app = builder.Build();
