@@ -44,7 +44,8 @@ namespace MetalcutWeb.DAL.Implementations
             delivery.RequestedUser = customer;
             delivery.RequestedTime = DateTime.Now;
             delivery.Price = productEntity.Price;
-            await _db.Deliveries.AddAsync(delivery);
+            _db.Deliveries.Add(delivery);
+            await _db.SaveChangesAsync();
         }
     }
 }

@@ -32,11 +32,11 @@ namespace MetalcutWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (productFromDb != null || currentUser != null)
             {
-                await _unitOfWork.Delivery.RequestDelivery(currentUser, productFromDb);
-                await _unitOfWork.Save();
                 try
                 {
-                    _emailSender.SendEmail(currentUser.Email, "Delivery", "<html><body>Delivery requested successfully</body></html>", true);
+                    await _unitOfWork.Delivery.RequestDelivery(currentUser, productFromDb);
+                    await _unitOfWork.Save();
+                    //_emailSender.SendEmail(currentUser.Email, "Delivery", "<html><body>Delivery requested successfully</body></html>", true);
                 }
                 catch (Exception ex)
                 {
