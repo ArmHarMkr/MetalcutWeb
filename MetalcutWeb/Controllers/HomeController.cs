@@ -34,7 +34,6 @@ namespace MetalcutWeb.Controllers
 
         public async Task<IActionResult> Index(string? searchTerm)
         {
-
             IEnumerable<ProductEntity> productsFromDb = await _db.Products.ToListAsync();
             ProductCommentViewModel productCommentViewModel = new ProductCommentViewModel();
             productCommentViewModel.Products = productsFromDb;

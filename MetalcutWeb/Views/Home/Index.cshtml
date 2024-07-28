@@ -160,7 +160,7 @@
                             }
                             else
                             {
-                                <form asp-controller="Delivery" asp-action="AllDeliveries">
+                                <form asp-controller="Delivery" asp-action="RequestDelivery" asp-route-id="@product.Id">
                                     <button type="submit">Request a delivery</button>
                                 </form>
                             }

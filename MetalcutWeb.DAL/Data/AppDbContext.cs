@@ -25,6 +25,7 @@ namespace MetalcutWeb.DAL.Data
         public DbSet<LikeEntity> Likes { get; set; }
         public DbSet<StorageProductEntity> StorageProducts { get; set; }
         public DbSet<OrderEntity> Orders { get; set; }
+        public DbSet<ServiceEntity> Services { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

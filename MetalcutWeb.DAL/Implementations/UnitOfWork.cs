@@ -24,6 +24,7 @@ namespace MetalcutWeb.DAL.Implementations
         public IChatRepository Chat { get; private set; }
         public IStorageProductRepository StorageProduct { get; private set; }
         public IOrderRepository Order { get; private set; }
+        public IServiceRepository Service { get; private set; }
         //---------
 
         public UnitOfWork(AppDbContext db, UserManager<AppUser> userManager)
@@ -39,6 +40,7 @@ namespace MetalcutWeb.DAL.Implementations
             Chat = new ChatRepository(_db);
             StorageProduct = new StorageProductRepository(_db);
             Order = new OrderRepository(_db);
+            Service = new ServiceRepository(_db);
         }
 
         public async Task Save()

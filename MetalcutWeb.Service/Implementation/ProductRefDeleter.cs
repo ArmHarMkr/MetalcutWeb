@@ -18,6 +18,7 @@ namespace MetalcutWeb.Service.Implementation
             _db = db;
         }
 
+        private readonly string rootFolder = @"E:\.Net projects\MetalcutWeb\MetalcutWeb\wwwroot\images\";
         public async Task DeleteReferences(ProductEntity product)
         {
             IEnumerable<CommentEntity> comments = await _db.Comments
@@ -39,6 +40,7 @@ namespace MetalcutWeb.Service.Implementation
                 _db.Comments.Remove(comment);
             }
             IEnumerable<Delivery> deliveriesWithProducts = _db.Deliveries.Include(d => d.DeliveryProduct).Where(d => d.DeliveryProduct == product);
+            File.Delete(Path.Combine(rootFolder, product.ImagePath));
             _db.Deliveries.RemoveRange(deliveriesWithProducts);
             await _db.SaveChangesAsync();
         }

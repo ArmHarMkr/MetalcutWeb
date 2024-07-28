@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 namespace MetalcutWeb.Areas.Manager.Controllers
 {
     [Authorize(Roles = "Admin, Manager")]
-    [Route("ManageProduct/[controller]/[action]")]
+    [Route("ManageProduct/{controller}/{action}")]
     [Area("Manager")]
     public class ProductController : Controller
     {
@@ -53,37 +53,44 @@ namespace MetalcutWeb.Areas.Manager.Controllers
 
         public async Task<IActionResult> CreateProduct(ProductViewModel productVM)
         {
-
-                string uniqueFileName = null;
-                if (productVM.Image != null)
+            string uniqueFileName = null;
+            if (productVM.Image != null)
+            {
+                string uploadsFolder = Path.Combine(_host.WebRootPath, "images");
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + productVM.Image.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    string uploadsFolder = Path.Combine(_host.WebRootPath, "images");
-                    uniqueFileName = Guid.NewGuid().ToString() + "_" + productVM.Image.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await productVM.Image.CopyToAsync(fileStream);
-                    }
+                    await productVM.Image.CopyToAsync(fileStream);
+                }
+            }
+
+            var newProduct = new ProductEntity
+            {
+                ProdName = productVM.ProductEntity.ProdName,
+                ProdDescription = productVM.ProductEntity.ProdDescription,
+                Price = productVM.ProductEntity.Price,
+                ImagePath = uniqueFileName
+            };
+
+            await _unitOfWork.Product.Add(newProduct);
+            await _unitOfWork.Save();
+
+            AppUser? currentUser = await _userManager.GetUserAsync(User);
+            try
+            {
+                if (currentUser == null || string.IsNullOrEmpty(currentUser.Email))
+                {
+                    throw new ArgumentNullException(nameof(currentUser.Email), "User or user's email cannot be null.");
                 }
 
-
-                // Create a new product entity
-                var newProduct = new ProductEntity
-                {
-                    ProdName = productVM.ProductEntity.ProdName,
-                    ProdDescription = productVM.ProductEntity.ProdDescription,
-                    ImagePath = uniqueFileName
-                };
-
-                // Add the new product to the database
-                await _unitOfWork.Product.Add(newProduct);
-                await _unitOfWork.Save();
-
-                // Send an email notification
-                AppUser? currentUser = await _userManager.GetUserAsync(User);
                 _emailSender.SendEmail(currentUser.Email, "Adding new Product", "<html><body><h1>New Product added successfully<h1></body></html>", true);
-
+            }
+            catch (Exception ex)
+            {
                 return RedirectToAction("AllProducts");
+            }
+            return RedirectToAction("AllProducts");
             
         }
 
@@ -113,7 +120,7 @@ namespace MetalcutWeb.Areas.Manager.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct(string? id)
         {
             if (id != null)
@@ -127,7 +134,7 @@ namespace MetalcutWeb.Areas.Manager.Controllers
                 {
                     var productFromDb = _unitOfWork.Product.Get(p => p.Id == id);
                     _unitOfWork.Product.Remove(productFromDb);
-                    _deleteProductReferences.DeleteReferences(productFromDb);
+                    await _deleteProductReferences.DeleteReferences(productFromDb);
                     await _unitOfWork.Save();
                     TempData["SuccessMessage"] = "Product deleted successfully";
                     return RedirectToAction("AllProducts");

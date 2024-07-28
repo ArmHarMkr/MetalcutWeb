@@ -11,6 +11,7 @@
         IMessageRepository Message { get; }
         IStorageProductRepository StorageProduct { get; }
         IOrderRepository Order { get; }
+        IServiceRepository Service { get; }
         Task Save();
     }
 }
